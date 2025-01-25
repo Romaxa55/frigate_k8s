@@ -1,0 +1,38 @@
+{{- if .Values.storage.enabled }}
+{{ $storageClassName := include "frigate.storageClassName" . }}
+
+# PVC для базы данных
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-db-pvc
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ $storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+
+---
+
+# PVC для конфигурации
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-config-pvc
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ $storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.configSize }}
+
+{{- end }}

@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "frigate.fullname" . }}
+  labels:
+    {{- include "frigate.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "frigate.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "frigate.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "frigate.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-config-pvc
+        {{- if .Values.storage.enabled }}
+        - name: database-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-db-pvc
+        {{- else }}
+        - name: database-volume
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.hwaccel.intelEnabled }}
+        - name: hwaccel-intel-dev
+          hostPath:
+            path: /dev/dri
+        {{- end }}
+        {{- if .Values.hwaccel.usbEnabled }}
+        - name: hwaccel-usb-dev
+          hostPath:
+            path: /dev/bus/usb
+        {{- end }}
+        - name: model-cache-volume
+          emptyDir: {}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+              readOnly: false
+            - name: database-volume
+              mountPath: /media/frigate/
+              readOnly: false
+            {{- if .Values.hwaccel.intelEnabled }}
+            - name: hwaccel-intel-dev
+              mountPath: /dev/dri
+            {{- end }}
+            {{- if .Values.hwaccel.usbEnabled }}
+            - name: hwaccel-usb-dev
+              mountPath: /dev/bus/usb
+            {{- end }}
+            - name: model-cache-volume
+              mountPath: /config/model_cache
+              readOnly: false
+          env:
+          {{- range .Values.secrets }}
+            - name: {{ .envVarName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .secretKey }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 12
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

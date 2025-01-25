@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  frigate.yaml: |
+    mqtt:
+      # Required: host name
+      host: {{ include "frigate.mqtt.host" . }}
+      {{- if .Values.mqtt.port }}
+      # Optional: port (default: shown below)
+      port: 1883
+      {{- end }}
+      {{- if .Values.mqtt.topic_prefix }}
+      # Optional: topic prefix (default: shown below)
+      # NOTE: must be unique if you are running multiple instances
+      topic_prefix: frigate
+      {{- end }}
+      {{- if .Values.mqtt.client_id }}
+      # Optional: client id (default: shown below)
+      # NOTE: must be unique if you are running multiple instances
+      client_id: frigate
+      {{- end }}
+      {{- if .Values.mqtt.user }}
+      # Optional: user
+      user: mqtt_user
+      {{- end }}
+      {{- if .Values.mqtt.password }}
+      # Optional: password
+      # NOTE: MQTT password can be specified with an environment variables that must begin with 'FRIGATE_'.
+      #       e.g. password: '{FRIGATE_MQTT_PASSWORD}'
+      password: password
+      {{- end }}
+      {{- if .Values.mqtt.tls_ca_certs }}
+      # Optional: tls_ca_certs for enabling TLS using self-signed certs (default: None)
+      tls_ca_certs: /path/to/ca.crt
+      {{- end }}
+      {{- if .Values.mqtt.tls_client_cert }}
+      # Optional: tls_client_cert and tls_client key in order to use self-signed client
+      # certificates (default: None)
+      # NOTE: certificate must not be password-protected
+      #       do not set user and password when using a client certificate
+      tls_client_cert: /path/to/client.crt
+      {{- end }}
+      {{- if .Values.mqtt.tls_client_key }}
+      tls_client_key: /path/to/client.key
+      {{- end }}
+      {{- if .Values.mqtt.tls_insecure }}
+      # Optional: tls_insecure (true/false) for enabling TLS verification of
+      # the server hostname in the server certificate (default: None)
+      tls_insecure: false
+      {{- end }}
+      {{- if .Values.mqtt.stats_interval }}
+      # Optional: interval in seconds for publishing stats (default: shown below)
+      stats_interval: 60
+      {{- end }}
+    database:
+      # The path to store the SQLite DB (default: shown below)
+      path: /media/frigate/frigate.db
+    {{- if .Values.cameras }}
+    cameras: 
+      {{- .Values.cameras | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.timestamp_style }}
+    timestamp_style: 
+      {{- .Values.timestamp_style | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.live }}
+    live: 
+      {{- .Values.live | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.rtmp }}
+    rtmp: 
+      {{- .Values.rtmp | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.snapshots }}
+    snapshots: 
+      {{- .Values.snapshots | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.record }}
+    record: 
+      {{- .Values.record | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.motion }}
+    motion: 
+      {{- .Values.motion | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.objects }}
+    objects: 
+      {{- .Values.objects | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.detect }}
+    detect: 
+      {{- .Values.detect | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.ffmpeg }}
+    ffmpeg: 
+      {{- .Values.ffmpeg | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.birdseye }}
+    birdseye: 
+      {{- .Values.birdseye | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.environment_vars }}
+    environment_vars: 
+      {{- .Values.environment_vars | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.logger }}
+    logger: 
+      {{- .Values.logger | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.model }}
+    model: 
+      {{- .Values.model | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.detectors }}
+    detectors: 
+      {{- .Values.detectors | toYaml | nindent 6 }}
+    {{- end }}
