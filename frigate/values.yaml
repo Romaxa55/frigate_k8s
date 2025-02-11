@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/blakeblackshear/frigate
   pullPolicy: Always
-  tag: "0.15.0-beta7-tensorrt"
+  tag: "0.14.1"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -27,16 +27,28 @@ hwaccel:
   intelEnabled: true
   usbEnabled: false
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
+  enabled: true
+  className: "traefik"
+  annotations:
+    ingress.kubernetes.io/router.entrypoints: web
+    ingress.kubernetes.io/router.middlewares: frigate-auth-middleware@kubernetescrd
   hosts:
-    - host: frigate.local
+    - host: frigate.lan
       paths:
         - path: /
           pathType: ImplementationSpecific
+#    - host: webcams.rubystay.vn
+#      paths:
+#        - path: /
+#          pathType: ImplementationSpecific
   tls: []
-resources: {}
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "500m"
+  limits:
+    memory: "4Gi"
+    cpu: "2000m"
 autoscaling:
   enabled: false
   minReplicas: 1
@@ -46,17 +58,3 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 secrets: []
-cameras:
-  example_camera:
-    ffmpeg:
-      inputs:
-        - path: rtsp://username:password@camera_ip:port/stream
-          roles:
-            - detect
-    detect:
-      width: 1920
-      height: 1080
-      fps: 5
-mqtt:
-  enabled: true
-  externalBrokerHostname: ~
