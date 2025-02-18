@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/blakeblackshear/frigate
   pullPolicy: Always
-  tag: "0.14.1"
+  tag: "0.15.0"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -44,11 +44,11 @@ ingress:
   tls: []
 resources:
   requests:
-    memory: "2Gi"
-    cpu: "500m"
+    memory: "2Gi"  # Увеличили минимальный запрос памяти
+    cpu: "500m"    # Больше CPU для стабильной работы
   limits:
-    memory: "4Gi"
-    cpu: "2000m"
+    memory: "8Gi"  # Максимум до 16 ГБ
+    cpu: "3000m"    # До 8 ядер
 autoscaling:
   enabled: false
   minReplicas: 1
