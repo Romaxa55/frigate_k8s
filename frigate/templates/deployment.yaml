@@ -76,6 +76,10 @@ spec:
               mountPath: /config/model_cache
               readOnly: false
           env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: MALLOC_ARENA_MAX  # Уменьшает потребление памяти в многопоточных приложениях
+              value: "2"
           {{- range .Values.secrets }}
             - name: {{ .envVarName }}
               valueFrom:

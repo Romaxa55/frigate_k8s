@@ -2,7 +2,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/blakeblackshear/frigate
   pullPolicy: Always
-  tag: "0.15.0"
+  tag: "8d05e7c"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -12,7 +12,9 @@ serviceAccount:
   annotations: {}
   name: ""
 podAnnotations: {}
-podSecurityContext: {}
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
 securityContext:
   privileged: true
 service:
@@ -28,27 +30,28 @@ hwaccel:
   usbEnabled: false
 ingress:
   enabled: true
-  className: "traefik"
+  className: "nginx"
   annotations:
-    ingress.kubernetes.io/router.entrypoints: web
-    ingress.kubernetes.io/router.middlewares: frigate-auth-middleware@kubernetescrd
+    nginx.ingress.kubernetes.io/auth-url: "http://traefik-auth.default.svc.cluster.local/api/v1/auth/vouch"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.rubystay.vn/?continue=https://webcams.rubystay.vn"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id, X-Auth-User, X-Auth-Email"
   hosts:
     - host: frigate.lan
       paths:
         - path: /
           pathType: ImplementationSpecific
-#    - host: webcams.rubystay.vn
-#      paths:
-#        - path: /
-#          pathType: ImplementationSpecific
+    - host: webcams.rubystay.vn
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
   tls: []
 resources:
   requests:
     memory: "2Gi"  # Увеличили минимальный запрос памяти
-    cpu: "500m"    # Больше CPU для стабильной работы
+    cpu: "1"    # Больше CPU для стабильной работы
   limits:
     memory: "8Gi"  # Максимум до 16 ГБ
-    cpu: "3000m"    # До 8 ядер
+    cpu: "2"    # До 8 ядер
 autoscaling:
   enabled: false
   minReplicas: 1
