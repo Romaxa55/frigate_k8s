@@ -27,7 +27,7 @@ storage:
   configSize: 100Mi
 hwaccel:
   intelEnabled: true
-  usbEnabled: false
+  usbEnabled: true
 ingress:
   enabled: true
   className: "nginx"
@@ -49,9 +49,11 @@ resources:
   requests:
     memory: "2Gi"  # Увеличили минимальный запрос памяти
     cpu: "1"    # Больше CPU для стабильной работы
+    ephemeral-storage: "5Gi"
   limits:
-    memory: "8Gi"  # Максимум до 16 ГБ
+    memory: "12Gi"  # Максимум до 16 ГБ
     cpu: "2"    # До 8 ядер
+    ephemeral-storage: "10Gi"
 autoscaling:
   enabled: false
   minReplicas: 1

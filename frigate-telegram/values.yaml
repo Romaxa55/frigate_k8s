@@ -1,0 +1,59 @@
+image:
+  repository: ghcr.io/oldtyt/frigate-telegram
+  tag: latest
+  pullPolicy: IfNotPresent
+
+redis:
+  image: redis:7.2.3-alpine3.18
+  dataPath: /mnt/docker/redis/data
+  args:
+    - "--save 900 1"
+    - "--save 300 10"
+    - "--save 60 100"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  pvc:
+    storage: 1Gi
+    storageClassName: local-path
+
+bot:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+env:
+  TELEGRAM_BOT_TOKEN: ""
+  FRIGATE_URL: "http://frigate"
+  FRIGATE_EVENT_LIMIT: 20
+  DEBUG: true
+  TELEGRAM_CHAT_ID: 0
+  SLEEP_TIME: 5
+  FRIGATE_EXTERNAL_URL: "http://webcams.rubystay.vn"
+  TZ: Asia/Ho_Chi_Minh
+  REDIS_ADDR: "localhost:6379"
+  REDIS_PASSWORD: ""
+  REDIS_DB: 0
+  REDIS_PROTOCOL: 3
+  REDIS_TTL: 1209600
+  TIME_WAIT_SAVE: 30
+  WATCH_DOG_SLEEP_TIME: 3
+  EVENT_BEFORE_SECONDS: 300
+  SEND_TEXT_EVENT: false
+  FRIGATE_EXCLUDE_CAMERA: "None"
+  FRIGATE_INCLUDE_CAMERA: "All"
+  FRIGATE_EXCLUDE_LABEL: "None"
+  FRIGATE_INCLUDE_LABEL: "person"
+
+secretRefs:
+  telegramBotToken: "frigate-telegram-bot-token"
+
+resources: {}
