@@ -1,0 +1,12 @@
+# nfs-pvc-frigate.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frigate-nfs-storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1500Gi
+  storageClassName: nfs-sc

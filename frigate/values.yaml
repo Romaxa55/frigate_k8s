@@ -22,8 +22,8 @@ service:
   port: 80
 storage:
   enabled: true
-  size: 100Gi
-  storageClass: local-path
+  size: 1500Gi
+  storageClass: nfs-sc
   configSize: 100Mi
 hwaccel:
   intelEnabled: true
@@ -51,8 +51,8 @@ resources:
     cpu: "1"    # Больше CPU для стабильной работы
     ephemeral-storage: "5Gi"
   limits:
-    memory: "12Gi"  # Максимум до 16 ГБ
-    cpu: "2"    # До 8 ядер
+    memory: "6Gi"  # Максимум до 16 ГБ
+    cpu: "1"    # До 8 ядер
     ephemeral-storage: "10Gi"
 autoscaling:
   enabled: false
