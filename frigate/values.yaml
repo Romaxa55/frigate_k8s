@@ -1,8 +1,8 @@
 replicaCount: 1
 image:
   repository: ghcr.io/blakeblackshear/frigate
-  pullPolicy: Always
-  tag: "8d05e7c"
+  pullPolicy: IfNotPresent
+  tag: "6936d33-tensorrt"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -22,7 +22,7 @@ service:
   port: 80
 storage:
   enabled: true
-  size: 1500Gi
+  size: 1000Gi
   storageClass: nfs-sc
   configSize: 100Mi
 hwaccel:
@@ -47,19 +47,20 @@ ingress:
   tls: []
 resources:
   requests:
-    memory: "2Gi"  # Увеличили минимальный запрос памяти
-    cpu: "1"    # Больше CPU для стабильной работы
-    ephemeral-storage: "5Gi"
+    memory: "6Gi"  # Увеличили минимальный запрос памяти
+    cpu: "8"    # Больше CPU для стабильной работы
+    ephemeral-storage: "6Gi"
   limits:
-    memory: "6Gi"  # Максимум до 16 ГБ
-    cpu: "1"    # До 8 ядер
-    ephemeral-storage: "10Gi"
+    memory: "16Gi"  # Максимум до 16 ГБ
+    cpu: "12"    # До 8 ядер
+    ephemeral-storage: "30Gi"
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-nodeSelector: {}
+nodeSelector:
+  node: pve
 tolerations: []
 affinity: {}
 secrets: []

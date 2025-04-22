@@ -8,6 +8,8 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "frigate.selectorLabels" . | nindent 6 }}
@@ -25,13 +27,14 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "frigate.serviceAccountName" . }}
+      runtimeClassName: nvidia
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
         - name: dshm
           emptyDir:
             medium: Memory
-            sizeLimit: 512Mi
+            sizeLimit: 2048Mi
         - name: config-volume
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-config-pvc
