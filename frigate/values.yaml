@@ -46,14 +46,14 @@ ingress:
           pathType: ImplementationSpecific
   tls: []
 resources:
-  requests:
-    memory: "6Gi"  # Увеличили минимальный запрос памяти
-    cpu: "8"    # Больше CPU для стабильной работы
-    ephemeral-storage: "6Gi"
-  limits:
-    memory: "16Gi"  # Максимум до 16 ГБ
-    cpu: "12"    # До 8 ядер
-    ephemeral-storage: "30Gi"
+  requests: {}
+#    memory: "8Gi"  # Увеличили минимальный запрос памяти
+#    cpu: "4"    # Больше CPU для стабильной работы
+#    ephemeral-storage: "15Gi"
+#  limits:
+#    memory: "32Gi"  # Максимум до 32 ГБ
+#    cpu: "30"    # До 8 ядер
+#    ephemeral-storage: "30Gi"
 autoscaling:
   enabled: false
   minReplicas: 1
