@@ -15,9 +15,9 @@ spec:
       {{- include "frigate.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
         config-hash: {{ $.Values.configContent | default "no-config-provided" | sha256sum | trunc 63 | quote }}
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:

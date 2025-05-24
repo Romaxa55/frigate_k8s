@@ -80,13 +80,11 @@ class CameraStreamChecker:
         if max_workers is None:
             cpu_count = os.cpu_count() or 4
             max_workers = min(32, cpu_count * 2)
-        print(f'STREAMS _raw CHECK (workers={max_workers}):')
+        print(f'STREAMS CHECK (workers={max_workers}):')
         results = {}
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
             for stream_name, stream_urls in self.streams.items():
-                if not stream_name.endswith('_raw'):
-                    continue
                 for url in stream_urls:
                     if url.startswith('rtsp://'):
                         future = executor.submit(
