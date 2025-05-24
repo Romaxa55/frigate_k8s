@@ -1,0 +1,14 @@
+apiVersion: v2
+appVersion: 0.11.0
+dependencies:
+- alias: mqtt
+  condition: mqtt.enabled
+  name: mosquitto
+  repository: https://k8s-at-home.com/charts/
+  version: 4.8.2
+description: A Helm chart to deploy frigate into a kubernetes cluster
+maintainers:
+- name: bryopsida
+name: frigate
+type: application
+version: 0.2.1

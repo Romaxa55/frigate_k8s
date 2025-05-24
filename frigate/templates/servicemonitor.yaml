@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "frigate.fullname" . }}
+  labels:
+    release: rancher-monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ include "frigate.fullname" . }}
+      app.kubernetes.io/name: {{ include "frigate.fullname" . }}
+  namespaceSelector:
+    matchNames:
+      - {{ include "frigate.fullname" . }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

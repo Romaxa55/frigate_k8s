@@ -1,0 +1,4 @@
+apiVersion: v2
+name: frigate-telegram
+version: 0.1.0
+description: Helm chart for Frigate Telegram Bot

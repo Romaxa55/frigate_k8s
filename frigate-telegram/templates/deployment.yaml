@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "frigate-telegram.fullname" . }}
+  labels:
+    app: {{ include "frigate-telegram.name" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "frigate-telegram.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "frigate-telegram.name" . }}
+    spec:
+      containers:
+        - name: bot
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretRefs.telegramBotToken }}
+                  key: token
+{{- range $key, $value := .Values.env }}
+{{- if ne $key "TELEGRAM_BOT_TOKEN" }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.bot.resources | nindent 12 }}
+
+        - name: redis
+          image: {{ .Values.redis.image }}
+          command: ["redis-server"]
+          args:
+{{- range .Values.redis.args }}
+            - {{ . | quote }}
+{{- end }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc

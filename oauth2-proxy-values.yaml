@@ -1,0 +1,21 @@
+config:
+  clientID: "frigate"  # ID клиента в Keycloak
+  clientSecret: "7xNEyG14h3ckTiL2YarxQ7qaJqyRy7hT"  # Секрет клиента из Keycloak (сохраните из Keycloak → Clients → Credentials)
+  cookieSecret: "my_merchant_key_"  # Случайная строка, например: openssl rand -base64 32
+  provider: "keycloak"
+  providerDisplayName: "Frigate"
+  keycloakConfig:
+    realm: "master"  # Замените на ваш Realm, если используется другой
+    authURL: "http://keycloak.keycloak.svc.cluster.local/realms/master/protocol/openid-connect/auth"
+    tokenURL: "http://keycloak.keycloak.svc.cluster.local/realms/master/protocol/openid-connect/token"
+    userInfoURL: "http://keycloak.keycloak.svc.cluster.local/realms/master/protocol/openid-connect/userinfo"
+
+ingress:
+  enabled: true
+  className: traefik
+  path: /
+  # Only used if API capabilities (networking.k8s.io/v1) allow it
+  pathType: ImplementationSpecific
+  # Used to create an Ingress record.
+  hosts:
+    - oauth2-proxy.keycloak.lan

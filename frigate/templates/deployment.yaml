@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "frigate.fullname" . }}
+  labels:
+    {{- include "frigate.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "frigate.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "frigate.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "frigate.serviceAccountName" . }}
+      {{- if .Values.gpu.enabled }}
+      runtimeClassName: {{ .Values.gpu.runtimeClassName }}  # Устанавливаем runtimeClassName только если GPU включено
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: install-nano
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              apt update && apt install -y nano
+              cp $(which nano) /init-tools/nano
+          volumeMounts:
+            - name: nano-bin
+              mountPath: /init-tools
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.sizeLimit }}
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-config-pvc
+        {{- if .Values.storage.enabled }}
+        - name: database-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-db-pvc
+        {{- else }}
+        - name: database-volume
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.hwaccel.intelEnabled }}
+        - name: hwaccel-intel-dev
+          hostPath:
+            path: /dev/dri
+        {{- end }}
+        {{- if .Values.hwaccel.usbEnabled }}
+        - name: hwaccel-usb-dev
+          hostPath:
+            path: /dev/bus/usb
+        {{- end }}
+        - name: model-cache-volume
+          emptyDir: {}
+        - name: nano-bin
+          emptyDir: { }
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - name: config-volume
+              mountPath: /config
+              readOnly: false
+            - name: nano-bin
+              mountPath: /usr/local/bin/nano
+              subPath: nano
+            - name: database-volume
+              mountPath: /media/frigate/
+              readOnly: false
+            {{- if .Values.hwaccel.intelEnabled }}
+            - name: hwaccel-intel-dev
+              mountPath: /dev/dri
+            {{- end }}
+            {{- if .Values.hwaccel.usbEnabled }}
+            - name: hwaccel-usb-dev
+              mountPath: /dev/bus/usb
+            {{- end }}
+            - name: model-cache-volume
+              mountPath: /config/model_cache
+              readOnly: false
+          env:
+            - name: YOLO_MODELS
+              value: "yolov4-tiny-416-dla"
+            - name: USE_FP16
+              value: "False"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: MALLOC_ARENA_MAX  # Уменьшает потребление памяти в многопоточных приложениях
+              value: "2"
+          {{- range .Values.secrets }}
+            - name: {{ .envVarName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .secretKey }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,23 @@
+# copy-helper.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: copy-helper
+
+spec:
+  containers:
+  - name: copier
+    image: alpine
+    command: ["/bin/sh", "-c", "sleep 3600"]
+    volumeMounts:
+    - name: old
+      mountPath: /mnt/old
+    - name: new
+      mountPath: /mnt/new
+  volumes:
+  - name: old
+    persistentVolumeClaim:
+      claimName: frigate-db-pvc
+  - name: new
+    persistentVolumeClaim:
+      claimName: frigate-nfs-storage
