@@ -124,6 +124,8 @@ spec:
               mountPath: /config/model_cache
               readOnly: false
           env:
+            - name: FRIGATE_DISABLE_MEMLIMIT
+              value: "1"
             - name: USE_FP16
               value: "False"
             - name: PYTHONUNBUFFERED
