@@ -35,7 +35,7 @@ storage:
   enabled: true
   size: 800Gi
   storageClass: longhorn-no-replicas
-  configSize: 100Mi
+  configSize: 2Gi
 
 sizeLimit: 17048Mi
 

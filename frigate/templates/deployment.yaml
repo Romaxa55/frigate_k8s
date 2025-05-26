@@ -145,7 +145,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/events?limit=10&has_snapshot=1
               port: http
             initialDelaySeconds: 30
             periodSeconds: 20
@@ -154,7 +154,7 @@ spec:
 
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/events?limit=10&has_snapshot=1
               port: http
             initialDelaySeconds: 15
             periodSeconds: 15
